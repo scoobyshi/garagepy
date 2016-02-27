@@ -18,6 +18,7 @@ GPIO.setup(ClosedSensorBottom, GPIO.IN)
 top_time_stamp = time.time()
 bottom_time_stamp = time.time()
 
+
 def topMagnet(channel):
     global top_time_stamp
     global topSensorTripped
@@ -27,7 +28,7 @@ def topMagnet(channel):
 
     if (GPIO.input(OpenSensorTop) == False) and ((top_time_now - top_time_stamp) >= 0.3):
         print("Top Sensor Triggered GPIO 23, Falling Edge")
-        # If bottom is already tripped and now top is, means door is at limit open, if bottom isn't then we set topSensor true
+        # If bottom is already tripped and now top, door is at limit open, if bottom isn't then we set topSensor true
         if (bottomSensorTripped):
             doorOpen = True
             doorClosed = False
@@ -50,7 +51,7 @@ def bottomMagnet(channel):
 
     if (GPIO.input(ClosedSensorBottom) == False) and ((bottom_time_now - bottom_time_stamp) >= 0.2):
         print("Bottom Sensor Triggered GPIO 17, Falling Edge")
-        # if top is already tripped and now bottom is, means door is at limit closed, if top isn't then we set bottomSensor true
+        # if top is already tripped and now bottom, door is at limit closed, if top isn't then we set bottomSensor true
         if (topSensorTripped):
             doorClosed = True
             doorOpen = False
