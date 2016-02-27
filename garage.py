@@ -9,7 +9,7 @@ GPIO.setwarnings(False)
 topSensorTripped = False
 doorOpen = False
 bottomSensorTripped = False
-doorCLosed = False
+doorClosed = False
 
 OpenSensorTop = 23
 ClosedSensorBottom = 17
@@ -91,7 +91,7 @@ else:
 # Main loop
 try:
 
-    while True:
+    while not doorOpen or not doorClosed:
         time.sleep(0.01)
 
 except KeyboardInterrupt:
