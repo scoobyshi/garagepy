@@ -91,7 +91,7 @@ else:
 # Main loop
 try:
 
-    while not doorOpen or not doorClosed:
+    while not doorOpen and not doorClosed:
         time.sleep(0.01)
 
 except KeyboardInterrupt:
