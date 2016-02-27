@@ -1,5 +1,6 @@
 #!/usr/bin/env python                                                                                                          
 import time
+import sys
 import RPi.GPIO as GPIO
 
 GPIO.setmode(GPIO.BCM)
@@ -12,11 +13,22 @@ doorCLosed = False
 
 OpenSensorTop = 23
 ClosedSensorBottom = 17
+GaragePower = 18
 
+GPIO.setup(GaragePower, GPIO.OUT)
 GPIO.setup(OpenSensorTop, GPIO.IN)
 GPIO.setup(ClosedSensorBottom, GPIO.IN)
+
 top_time_stamp = time.time()
 bottom_time_stamp = time.time()
+
+
+def moveDoor():
+    GPIO.output(GaragePower,1)
+    time.sleep(2)
+    GPIO.output(GaragePower,0)
+    time.sleep(2)
+    GPIO.output(GaragePower,1)
 
 
 def topMagnet(channel):
@@ -25,7 +37,6 @@ def topMagnet(channel):
     global doorOpen
     global doorClosed
     top_time_now = time.time()
-
     if (GPIO.input(OpenSensorTop) == False) and ((top_time_now - top_time_stamp) >= 0.3):
         print("Top Sensor Triggered GPIO 23, Falling Edge")
         # If bottom is already tripped and now top, door is at limit open, if bottom isn't then we set topSensor true
@@ -35,10 +46,7 @@ def topMagnet(channel):
             print("The Garage Door is Open!")
         else:
             topSensorTripped = True
-            print("The Garage Door is Opening...")
-    else:
-        print("Top Sensor did something?")
-
+            print("The Garage Door is Closing...")
     top_time_stamp = top_time_now
 
 
@@ -48,7 +56,6 @@ def bottomMagnet(channel):
     global doorOpen
     global doorClosed
     bottom_time_now = time.time()
-
     if (GPIO.input(ClosedSensorBottom) == False) and ((bottom_time_now - bottom_time_stamp) >= 0.2):
         print("Bottom Sensor Triggered GPIO 17, Falling Edge")
         # if top is already tripped and now bottom, door is at limit closed, if top isn't then we set bottomSensor true
@@ -58,29 +65,37 @@ def bottomMagnet(channel):
             print("The Garage Door is Closed!")
         else:
             bottomSensorTripped = True
-            print("The Garage Door is Closing...")
-    else:
-        print("Bottom Sensor did something?")
-
+            print("The Garage Door is Opening...")
     bottom_time_stamp = bottom_time_now
 
 
-raw_input("Press Enter when ready\n>")
-
-# Wait for a falling or rising edge from the hall sensor before executing the code below
-# GPIO.wait_for_edge(OpenSensorTop, GPIO.FALLING)
+# We could use: GPIO.wait_for_edge(OpenSensorTop, GPIO.FALLING), but need to watch both sensors concurrently
 GPIO.add_event_detect(OpenSensorTop, GPIO.FALLING, callback=topMagnet)
 GPIO.add_event_detect(ClosedSensorBottom, GPIO.FALLING, callback=bottomMagnet)
 
+
+try:
+    param = sys.argv[1]
+except:
+    param = 'none'
+
+print("Parameter: %r" % param)
+if param == "init":
+    print("Start the motor and move the door...")
+    moveDoor()
+else:
+    raw_input("Press Enter when ready to move the door>")
+    moveDoor()
+
+
 # Main loop
+try:
 
-print("Check for Top or Bottom Magnet")
+    while True:
+        time.sleep(0.01)
 
-while True:
-    #  if GPIO.input(ClosedSensorBottom):
-    #    doorClosing = GPIO.input(ClosedSensorBottom)
-    #    print("Yep, door near bottom rail, status is ", doorClosing)
+except KeyboardInterrupt:
+    print("Exiting...")
 
-    time.sleep(0.01)
-
-GPIO.cleanup()
+finally:
+    GPIO.cleanup()
