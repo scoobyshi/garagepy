@@ -24,9 +24,8 @@ bottom_time_stamp = time.time()
 
 
 def moveDoor():
-    GPIO.output(GaragePower,1)
-    time.sleep(2)
     GPIO.output(GaragePower,0)
+    # We need some time here before resetting the pin high to allow the relay to switch the motor
     time.sleep(2)
     GPIO.output(GaragePower,1)
 
@@ -38,7 +37,7 @@ def topMagnet(channel):
     global doorClosed
     top_time_now = time.time()
     if (GPIO.input(OpenSensorTop) == False) and ((top_time_now - top_time_stamp) >= 0.3):
-        print("Top Sensor Triggered GPIO 23, Falling Edge")
+        print("Top Sensor Triggered on GPIO 23")
         # If bottom is already tripped and now top, door is at limit open, if bottom isn't then we set topSensor true
         if (bottomSensorTripped):
             doorOpen = True
@@ -57,7 +56,7 @@ def bottomMagnet(channel):
     global doorClosed
     bottom_time_now = time.time()
     if (GPIO.input(ClosedSensorBottom) == False) and ((bottom_time_now - bottom_time_stamp) >= 0.2):
-        print("Bottom Sensor Triggered GPIO 17, Falling Edge")
+        print("Bottom Sensor Triggered on GPIO 17")
         # if top is already tripped and now bottom, door is at limit closed, if top isn't then we set bottomSensor true
         if (topSensorTripped):
             doorClosed = True
@@ -82,6 +81,8 @@ except:
 print("Parameter: %r" % param)
 if param == "init":
     print("Start the motor and move the door...")
+    # We need a small pause here to allow GPIO to init and start listening for events
+    time.sleep(0.5)
     moveDoor()
 else:
     raw_input("Press Enter when ready to move the door>")
